@@ -27,6 +27,8 @@ flags.DEFINE_string("sc2_run_config", None,
                     "Which run_config to use to spawn the binary.")
 FLAGS = flags.FLAGS
 
+import sys
+FLAGS(sys.argv)
 
 def get():
   """Get the config chosen by the flags."""

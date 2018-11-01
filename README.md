@@ -19,6 +19,12 @@
   </a>
 </div>
 
+# NOTE
+Minor changes to Deepmind's [pysc2](https://github.com/deepmind/pysc2) to allow multiple actions per timestep for a
+Multi Agent Reinforcement Learning project. To use, install this version of pysc2 by cloning this repo, going to it's
+directory and using the command `pip install -e .`. You can then send individual actions or a list of raw actions
+ to the env.step() function found in pysc2/env/sc2_env.
+
 # PySC2 - StarCraft II Learning Environment
 
 [PySC2](https://github.com/deepmind/pysc2) is [DeepMind](http://deepmind.com)'s

@@ -873,9 +873,9 @@ class Features(object):
       out["rgb_minimap"] = Feature.unpack_rgb_image(
           obs.observation.render_data.minimap).astype(np.int32)
 
-    out["last_actions"] = np.array(
-        [self.reverse_action(a).function for a in obs.actions],
-        dtype=np.int32)
+    # out["last_actions"] = np.array(
+    #     [self.reverse_action(a).function for a in obs.actions],
+    #     dtype=np.int32)
 
     out["action_result"] = np.array([o.result for o in obs.action_errors],
                                     dtype=np.int32)
@@ -972,9 +972,8 @@ class Features(object):
             [unit_vec(u) for u in ui.production.build_queue],
             [None, UnitLayer])
 
-    def full_unit_vec(u, pos_transform, is_raw=False):
-      screen_pos = pos_transform.fwd_pt(
-          point.Point.build(u.pos))
+    def full_unit_vec(u, pos_transform, is_raw=False, use_raw_pos=False):
+      screen_pos = u.pos if use_raw_pos else pos_transform.fwd_pt(point.Point.build(u.pos))
       screen_radius = pos_transform.fwd_dist(u.radius)
       return np.array((
           # Match unit_vec order
@@ -1010,7 +1009,7 @@ class Features(object):
           u.weapon_cooldown,
           len(u.orders),
           u.tag if is_raw else 0
-      ), dtype=np.int32)
+      ), dtype=np.int64)
 
     raw = obs.observation.raw_data
 
@@ -1028,10 +1027,10 @@ class Features(object):
 
     if aif.use_raw_units:
       with sw("raw_units"):
-        raw_units = [full_unit_vec(u, self._world_to_world_tl, is_raw=True)
+        raw_units = [full_unit_vec(u, self._world_to_world_tl, is_raw=True, use_raw_pos=True)
                      for u in raw.units]
         out["raw_units"] = named_array.NamedNumpyArray(
-            raw_units, [None, FeatureUnit], dtype=np.int32)
+            raw_units, [None, FeatureUnit], dtype=np.int64)
 
     if aif.use_unit_counts:
       with sw("unit_counts"):
@@ -1095,6 +1094,9 @@ class Features(object):
     Raises:
       ValueError: if the action doesn't pass validation.
     """
+    if isinstance(func_call, sc_pb.Action) or all([isinstance(a, sc_pb.Action) for a in func_call]):
+        return func_call
+
     func_id = func_call.function
     try:
       func = actions.FUNCTIONS[func_id]
